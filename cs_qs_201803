@@ -1,0 +1,17 @@
+Select (Select Org_Name From o_Org Where Org_No = Substr(b.Org_No, 1, 5)) 市公司,
+       (Select Org_Name From o_Org Where Org_No = Substr(b.Org_No, 1, 7)) 县公司,
+       (Select Org_Name From o_Org Where Org_No = b.Org_No) 供电所,
+			 a.cons_no,b.cons_name,a.buy_taxpayer_no 增值税税号,a.buy_taxpayer_name 增值税税名,
+			 (Select Name From p_code Where code_sort_id ='666' And Value =b.volt_code) 电压等级,
+       (Select Name From p_code Where code_sort_id ='91' And Value =b.elec_type_code) 用电类别,
+			 (Select Sum(t_pq) From a_rcvbl_flow Where rcvbl_ym =a.rcvbl_ym And cons_no =a.cons_no) 电量,
+			 (Select Sum(rcvbl_amt) From a_rcvbl_flow Where rcvbl_ym =a.rcvbl_ym And cons_no =a.cons_no) 电费,
+			 (Select Sum(t_amt) From pub_e_pq_amt o,sgpms.a_inv_rela k Where o.cat_prc_name Like '%居民生活%' And o.rcvbl_amt_id = k.rcvbl_id And k.inv_id = a.inv_id) 当月居民生活电费,
+			 a.total_amt 当月增值税开票金额,decode(a.inv_busi_type,'01','电费','业务费') 电费类型,
+	    (Select max(mr_day) From r_plan_day  Where mr_sect_no = b.mr_sect_no And effect_flag ='1') 抄表列日,b.mr_sect_no 抄表段编号
+  From sgpms.a_inv_metadata a ,c_cons b
+Where a.cons_no = b.cons_no
+	--And a.org_no Like '43401%'
+	And a.rcvbl_ym ='201903'
+	And b.volt_code In ('AC00101','AC00351','AC01101','AC02201','AC03301','AC05001')
+	And b.cons_sort_code Not Like '00%' Order By b.Org_No
